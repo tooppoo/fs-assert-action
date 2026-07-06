@@ -9,6 +9,7 @@
     "gen:docs": "node scripts/gen-assertions-doc.mjs",
     "typecheck": "tsc --noEmit"
   },
+  "packageManager": "pnpm@11.10.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tooppoo/fs-assert-action.git"
