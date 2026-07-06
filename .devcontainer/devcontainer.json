@@ -1,19 +1,23 @@
 {
-  "name": "template-dev",
+  "name": "fs-assert-action-dev",
   "image": "mcr.microsoft.com/devcontainers/base:2.1.9-trixie",
-  "workspaceFolder": "/workspaces/fizz",
+  "workspaceFolder": "/workspaces/fs-assert-action",
   "remoteUser": "vscode",
   "runArgs": [
     "--init"
   ],
   "postCreateCommand": "sh scripts/setup-dev.sh",
   "features": {
-    "ghcr.io/devcontainers/features/github-cli:1": {}
+    "ghcr.io/devcontainers/features/ruby:2": {
+      "version": "4.0.5"
+    }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "EditorConfig.EditorConfig"
+        "EditorConfig.EditorConfig",
+        "Shopify.ruby-lsp",
+        "redhat.vscode-yaml"
       ],
       "settings": {
         "editor.formatOnSave": true,
