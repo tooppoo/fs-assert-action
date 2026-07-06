@@ -12,13 +12,20 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 22 # LTS
+          - 24 # LTS
+          - 26 # current
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v6
         with:
-          node-version: 20
-          cache: npm
+          node-version: ${{ strategy.matrix.node-version }}
+          cache: pnpm
 
       - name: Install dependencies
         run: npm ci
