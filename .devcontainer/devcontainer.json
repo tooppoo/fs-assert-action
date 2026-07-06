@@ -9,7 +9,8 @@
   "postCreateCommand": "sh scripts/setup-dev.sh",
   "features": {
     "ghcr.io/devcontainers/features/node:2": {
-      "version": "22"
+      "version": "22",
+      "pnpmVersion": "11.10.0"
     }
   },
   "customizations": {

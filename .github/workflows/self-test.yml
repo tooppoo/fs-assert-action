@@ -12,8 +12,19 @@ permissions:
 jobs:
   self-test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version:
+          - 22 # LTS
+          - 24 # LTS
+          - 26 # current
     steps:
       - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ strategy.matrix.node-version }}
 
       - name: Prepare fixtures
         run: |

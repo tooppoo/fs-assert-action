@@ -1,3 +1,5 @@
 node_modules/
 
 # dist/ is intentionally committed: action.yml runs dist/index.js
+
+.pnpm-store/
