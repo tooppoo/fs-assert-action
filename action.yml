@@ -1,0 +1,19 @@
+name: FS Assert
+description: Assert filesystem paths from a YAML manifest
+author: tooppoo
+
+branding:
+  icon: check-square
+  color: green
+
+inputs:
+  root:
+    description: Root directory for path assertions
+    required: true
+  manifest:
+    description: Inline YAML manifest
+    required: true
+
+runs:
+  using: node20
+  main: dist/index.js

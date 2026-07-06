@@ -1,0 +1,23 @@
+# Minimal example: assert files with an inline manifest.
+name: Example - inline manifest
+
+on:
+  workflow_dispatch:
+
+jobs:
+  assert:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Assert files
+        uses: tooppoo/fs-assert-action@v0
+        with:
+          root: .
+          manifest: |
+            version: 1
+            subjects:
+              - path: README.md
+                assertions:
+                  - exists
+                  - is_regular_file

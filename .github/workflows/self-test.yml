@@ -1,0 +1,200 @@
+name: Self Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  self-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Prepare fixtures
+        run: |
+          mkdir -p "$RUNNER_TEMP/fixtures"
+          cd "$RUNNER_TEMP/fixtures"
+          printf 'abc  app.tar.gz\ndef  other.txt\n' > checksums.txt
+          mkdir -p app_dir
+          printf '#!/bin/sh\necho hi\n' > app_dir/app
+          chmod +x app_dir/app
+          echo 'plain text' > notatar.txt
+          tar -czf app.tar.gz -C app_dir app
+          tar -cf plain.tar -C app_dir app
+
+      # --- success cases -------------------------------------------------
+
+      - name: Succeeds on a valid manifest
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: checksums.txt
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - line_count:
+                      equals: 2
+
+              - path: app.tar.gz
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - is_tarball
+
+              - path: plain.tar
+                assertions:
+                  - is_tarball
+
+              - path: app_dir/app
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - is_executable
+
+      # --- failure cases -------------------------------------------------
+
+      - name: Fails when the file does not exist
+        id: missing-file
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: no-such-file
+                assertions:
+                  - exists
+
+      - name: Fails when the path is not a regular file
+        id: not-regular-file
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: app_dir
+                assertions:
+                  - is_regular_file
+
+      - name: Fails when the file is not executable
+        id: not-executable
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: checksums.txt
+                assertions:
+                  - is_executable
+
+      - name: Fails when the file is not a tarball
+        id: not-tarball
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: notatar.txt
+                assertions:
+                  - is_tarball
+
+      - name: Fails when the line count differs
+        id: wrong-line-count
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: checksums.txt
+                assertions:
+                  - line_count:
+                      equals: 3
+
+      - name: Fails on an unknown assertion name
+        id: unknown-assertion
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: checksums.txt
+                assertions:
+                  - non_empty
+
+      - name: Fails on an unsupported manifest version
+        id: unsupported-version
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 2
+            subjects: []
+
+      - name: Fails on an absolute path
+        id: absolute-path
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: /etc/passwd
+                assertions:
+                  - exists
+
+      - name: Fails on a path escaping the root
+        id: escaping-path
+        continue-on-error: true
+        uses: ./
+        with:
+          root: ${{ runner.temp }}/fixtures
+          manifest: |
+            version: 1
+            subjects:
+              - path: ../../etc/passwd
+                assertions:
+                  - exists
+
+      - name: Verify failure outcomes
+        env:
+          OUTCOMES: |
+            missing-file=${{ steps.missing-file.outcome }}
+            not-regular-file=${{ steps.not-regular-file.outcome }}
+            not-executable=${{ steps.not-executable.outcome }}
+            not-tarball=${{ steps.not-tarball.outcome }}
+            wrong-line-count=${{ steps.wrong-line-count.outcome }}
+            unknown-assertion=${{ steps.unknown-assertion.outcome }}
+            unsupported-version=${{ steps.unsupported-version.outcome }}
+            absolute-path=${{ steps.absolute-path.outcome }}
+            escaping-path=${{ steps.escaping-path.outcome }}
+        run: |
+          status=0
+          while IFS='=' read -r name outcome; do
+            [ -z "$name" ] && continue
+            if [ "$outcome" != "failure" ]; then
+              echo "::error::step '$name' should have failed but was '$outcome'"
+              status=1
+            fi
+          done <<< "$OUTCOMES"
+          exit $status

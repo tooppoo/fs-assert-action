@@ -1,0 +1,57 @@
+# Release archive verification: assert the archive and checksums file,
+# verify checksums explicitly, extract, then assert the extracted files.
+name: Example - release archive
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify-release:
+    runs-on: ubuntu-latest
+    steps:
+      # ... build steps producing dist/ ...
+
+      - name: Assert release files
+        uses: tooppoo/fs-assert-action@v0
+        with:
+          root: dist
+          manifest: |
+            version: 1
+            subjects:
+              - path: checksums.txt
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - line_count:
+                      equals: 2
+
+              - path: app_Linux_x86_64.tar.gz
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - is_tarball
+
+      # Checksum verification is the caller's responsibility.
+      - name: Verify checksums
+        working-directory: dist
+        run: sha256sum --strict --check checksums.txt
+
+      # Archive extraction is the caller's responsibility.
+      - name: Extract archive
+        working-directory: dist
+        run: |
+          mkdir -p app_Linux_x86_64
+          tar -xf app_Linux_x86_64.tar.gz -C app_Linux_x86_64
+
+      - name: Assert extracted files
+        uses: tooppoo/fs-assert-action@v0
+        with:
+          root: dist/app_Linux_x86_64
+          manifest: |
+            version: 1
+            subjects:
+              - path: app
+                assertions:
+                  - exists
+                  - is_regular_file
+                  - is_executable

@@ -1,0 +1,36 @@
+{
+  "name": "fs-assert-action",
+  "version": "0.1.0",
+  "description": "Assert filesystem paths from a YAML manifest in GitHub Actions",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --outfile=dist/index.js",
+    "gen:docs": "node scripts/gen-assertions-doc.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tooppoo/fs-assert-action.git"
+  },
+  "keywords": [
+    "github-actions",
+    "filesystem",
+    "assertion"
+  ],
+  "author": "tooppoo",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/tooppoo/fs-assert-action/issues"
+  },
+  "homepage": "https://github.com/tooppoo/fs-assert-action#readme",
+  "dependencies": {
+    "@actions/core": "^3.0.1",
+    "yaml": "^2.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.0",
+    "esbuild": "^0.28.1",
+    "typescript": "^6.0.3"
+  }
+}
