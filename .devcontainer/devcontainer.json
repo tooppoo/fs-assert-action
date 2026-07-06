@@ -8,16 +8,17 @@
   ],
   "postCreateCommand": "sh scripts/setup-dev.sh",
   "features": {
-    "ghcr.io/devcontainers/features/ruby:2": {
-      "version": "4.0.5"
+    "ghcr.io/devcontainers/features/node:2": {
+      "version": "22"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
         "EditorConfig.EditorConfig",
-        "Shopify.ruby-lsp",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "antfu.vite",
+        "vitest.explorer"
       ],
       "settings": {
         "editor.formatOnSave": true,
